@@ -11,7 +11,7 @@ const port = 3000;
 app.use(express.urlencoded());
 app.use(express.json());
 app.use(
-  session({ secret: "eueueu kurwy rozjebie ", cookie: { maxAge: 60000 } })
+  session({ secret: "eueueu kurwy rozjebie ", cookie: { maxAge: 600000 } })
 );
 app.use(express.static("public"));
 app.set("views", "./views");
@@ -19,12 +19,22 @@ app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
 //=========== Dashboard
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   if (!req.session.userId) {
     return res.redirect("/login");
   }
+  const tasks = await prisma.tasks.findMany({
+    where: { userId: session.userId, idDone: false },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const lateTask = [];
+  tasks.forEach((v) => {
+    lateTask.push(v);
+  });
+
   console.log(req.session);
-  return res.render("dashboard");
+  return res.render("dashboard", lateTask);
 });
 
 //===============GET Login
